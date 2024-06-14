@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'AWS Template to create lambda with resource based policy'
+Description: "AWS Template to create lambda with resource based policy"
 Resources:
   cleanupBucketOnDelete:
     Type: Custom::cleanupbucket
     Properties:
-      ServiceToken: !GetAtt 'DeleteS3Bucket.Arn'
+      ServiceToken: !GetAtt "DeleteS3Bucket.Arn"
       BucketName: !Ref S3Bucket
     DependsOn: S3Bucket
 
@@ -12,10 +12,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.lambda_handler
-      FunctionName: 'csbot_deletes3_contents'
+      FunctionName: "csbot_deletes3_contents"
       Description: "Delete all objects in S3 bucket"
       Timeout: 30
-      Role: !GetAtt 'LambdaBasicExecutionRole.Arn'
+      Role: !GetAtt "LambdaBasicExecutionRole.Arn"
       Runtime: python3.9
       Environment:
         Variables:
@@ -47,8 +47,8 @@ Resources:
           def sendResponseCfn(event, context, responseStatus):
               responseData = {}
               responseData['Data'] = {}
-              cfnresponse.send(event, context, responseStatus, responseData, "CustomResourcePhysicalID")            
-        
+              cfnresponse.send(event, context, responseStatus, responseData, "CustomResourcePhysicalID")
+
   S3Bucket:
     Type: AWS::S3::Bucket
     Description: Creating Amazon S3 bucket to hold source data for agent
@@ -59,10 +59,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.lambda_handler
-      FunctionName: 'csbot_copy_s3contents'
+      FunctionName: "csbot_copy_s3contents"
       Description: "Copies files from the Blog bucket to bucket in this account"
       Timeout: 30
-      Role: !GetAtt 'LambdaBasicExecutionRole.Arn'
+      Role: !GetAtt "LambdaBasicExecutionRole.Arn"
       Runtime: python3.9
       Environment:
         Variables:
@@ -112,7 +112,7 @@ Resources:
               response = dict(files_copied=0, error=str(e))
               cfnresponse.send(event, context, cfnresponse.FAILED, response)
 
-            return 
+            return
 
   Primerinvoke:
     Type: AWS::CloudFormation::CustomResource
@@ -125,50 +125,50 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           Effect: Allow
           Action: bedrock:*
-          Resource: '*'
+          Resource: "*"
 
   AmazonBedrockExecutionRoleForAgents:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
-        - Effect: Allow
-          Principal:
-            Service: bedrock.amazonaws.com
-          Action: sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
       Path: /
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
         - !Ref BedrockPolicy
-      RoleName: 'AmazonBedrockExecutionRoleForAgents_csbot'
+      RoleName: "AmazonBedrockExecutionRoleForAgents_csbot"
 
   LambdaBasicExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
-        - Effect: Allow
-          Principal:
-            Service: lambda.amazonaws.com
-          Action: sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
       Path: /
       Policies:
         - PolicyName: S3Access
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - s3:*
-                Resource: '*'
+                Resource: "*"
         - PolicyName: AWSLambdaBasicExecutionRole
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -181,7 +181,7 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt 'csbotBedrockAgent.Arn'
+      FunctionName: !GetAtt "csbotBedrockAgent.Arn"
       Principal: bedrock.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:bedrock:us-east-1:${AWS::AccountId}:agent/*
@@ -190,10 +190,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.lambda_handler
-      FunctionName: 'csbot_lambda_function'
+      FunctionName: "csbot_lambda_function"
       Description: "Contains API calls for customer service bot"
       Timeout: 30
-      Role: !GetAtt 'LambdaBasicExecutionRole.Arn'
+      Role: !GetAtt "LambdaBasicExecutionRole.Arn"
       Runtime: python3.9
       Environment:
         Variables:
@@ -340,7 +340,7 @@ Resources:
                   'response': action_response}
                   
               return api_response
-            
+
 Outputs:
   S3Bucket:
     Value: !GetAtt S3Bucket.Arn
